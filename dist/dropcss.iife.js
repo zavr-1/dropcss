@@ -207,7 +207,7 @@ var dropcss = (function () {
 		return ctx;
 	};
 
-	var COMMENTS = /\s*\/\*[\s\S]*?\*\/\s*/gm;
+	var COMMENTS = /\s*\/\*([\s\S]*?)\*\/\s*/gm;
 	var COMBINATORS = /\s*[>~+.#]\s*|\[[^\]]+\]|\s+/gm;
 
 	var START_AT = 1;
@@ -379,9 +379,12 @@ var dropcss = (function () {
 		return tokens;
 	}
 
-	function parse(css) {
+	function parse(css, keepAlternate) {
 		// strip comments (for now)
-		css = css.replace(COMMENTS, '');
+		css = css.replace(COMMENTS, keepAlternate ? function (m, comment) {
+			if (/^\s*@alternate\s*$/.test(comment)) { return m }
+			return ''
+		}: '');
 		return tokenize$1(css);
 	}
 
@@ -971,7 +974,7 @@ var dropcss = (function () {
 
 		var shouldDrop = opts.shouldDrop || drop;
 
-		var tokens = parse(opts.css);
+		var tokens = parse(opts.css, opts.keepAlternate);
 
 		// cache
 		var tested = {};
